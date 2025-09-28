@@ -1,7 +1,8 @@
 import yfinance as yf
 import pandas as pd
 
-# Enhanced Segment Tree (min, max, sum, avg)
+
+# Enhanced Segment Tree
 
 class SegmentTree:
     def __init__(self, data):
@@ -11,7 +12,7 @@ class SegmentTree:
 
     def build(self, data, node, l, r):
         if l == r:
-            self.tree[node] = (data[l], data[l], data[l], 1)  # (min, max, sum, count)
+            self.tree[node] = (data[l], data[l], data[l], 1)  # min, max, sum, count
             return
         mid = (l + r) // 2
         self.build(data, 2*node+1, l, mid)
@@ -43,9 +44,9 @@ class SegmentTree:
         return q[2]/q[3] if q[3] else None
 
 
-# Fetch multiple stocks
+# Fetch stock data and build RAG docs
 
-stocks = ["AAPL", "MSFT", "TSLA"]  # Apple, Microsoft, Tesla
+stocks = ["AAPL", "MSFT", "TSLA"]
 data = yf.download(stocks, start="2025-01-01", end="2025-02-01")["Close"]
 
 trees = {}
@@ -55,21 +56,86 @@ for stock in stocks:
     prices = data[stock].dropna().tolist()
     dates = data.index.strftime("%Y-%m-%d").tolist()
     
-    # Build tree
     trees[stock] = SegmentTree(prices)
-    
-    # Build docs for RAG
     rag_docs[stock] = [
-        f"On {dates[i]}, {stock} closed at ${prices[i]}."
+        {"text": f"On {dates[i]}, {stock} closed at ${prices[i]}.", "price": prices[i], "date": dates[i]}
         for i in range(len(prices))
     ]
 
 
-# Example Queries
+# Resilient date mapping
 
-print("AAPL Min Jan =", trees["AAPL"].range_min(0, 10))
-print("MSFT Max Jan =", trees["MSFT"].range_max(0, 10))
-print("TSLA Avg Jan =", trees["TSLA"].range_avg(0, 10))
+def date_range_to_indices(start_date, end_date, dates):
+    """Find nearest available indices for start_date and end_date"""
+    start_idx = next((i for i, d in enumerate(dates) if d >= start_date), 0)
+    end_idx = next((i for i, d in reversed(list(enumerate(dates))) if d <= end_date), len(dates)-1)
+    return start_idx, end_idx
 
-print("\nRAG Docs for AAPL:")
-print(rag_docs["AAPL"][:3])
+
+# Execute numeric command
+
+def execute_command(command, trees, data):
+    op = command["operation"]
+    stocks = command["stocks"]
+    start_date = command["start_date"]
+    end_date = command["end_date"]
+
+    results = {}
+    for stock in stocks:
+        prices = data[stock].loc[start_date:end_date].dropna().tolist()
+        if not prices:
+            continue
+        tree = SegmentTree(prices)
+        if op == "min":
+            results[stock] = tree.range_min(0, len(prices)-1)
+        elif op == "max":
+            results[stock] = tree.range_max(0, len(prices)-1)
+        elif op == "sum":
+            results[stock] = tree.range_sum(0, len(prices)-1)
+        elif op == "avg":
+            results[stock] = tree.range_avg(0, len(prices)-1)
+
+    if op in ["min", "max", "avg"]:
+        best_stock = max(results, key=results.get) if op in ["max", "avg"] else min(results, key=results.get)
+        return f"{best_stock} has the {op} value of {results[best_stock]} among {stocks}"
+    return results
+
+
+# chatbot (simulated)
+
+def chatbot_query(user_query):
+  
+
+    user_query_lower = user_query.lower()
+    if "highest average" in user_query_lower:
+        command = {"operation": "avg", "stocks": stocks, "start_date": "2025-01-01", "end_date": "2025-01-31"}
+    elif "lowest price" in user_query_lower:
+        command = {"operation": "min", "stocks": stocks, "start_date": "2025-01-01", "end_date": "2025-01-31"}
+    elif "highest price" in user_query_lower:
+        command = {"operation": "max", "stocks": stocks, "start_date": "2025-01-01", "end_date": "2025-01-31"}
+    elif "total sum" in user_query_lower:
+        command = {"operation": "sum", "stocks": stocks, "start_date": "2025-01-01", "end_date": "2025-01-31"}
+    else:
+        return "Sorry, I currently support min, max, sum, avg queries only."
+
+    numeric_answer = execute_command(command, trees, data)
+
+    
+    stock_docs = []
+    for stock in command["stocks"]:
+        stock_docs += rag_docs[stock][:3]  # top 3 docs for demo
+    doc_text = "\n".join([d["text"] for d in stock_docs])
+
+    return f"{numeric_answer}\n"
+
+# Example chatbot queries
+
+queries = [
+    "Which stock had the highest average price in January 2025?",
+    "Which stock had the lowest price in January 2025?",
+    "Total sum of all stocks in January 2025?"
+]
+
+for q in queries:
+    print("\nUser:", q)
+    print("Bot:", chatbot_query(q))
