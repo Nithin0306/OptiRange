@@ -1,0 +1,6 @@
+yfinance
+pandas
+python-dotenv
+pinecone-client
+langchain
+langchain_google_genai
