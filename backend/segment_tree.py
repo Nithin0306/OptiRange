@@ -1,9 +1,13 @@
-# segment_tree.py
 class SegmentTree:
     def __init__(self, data):
         self.n = len(data)
         self.tree = [0] * (4 * self.n)
         self.build(data, 0, 0, self.n - 1)
+
+
+    """The time complexity for this function is O(n) 
+    since each leaf node is visited exactly once and , a complete segment tree has 
+    at most 4n nodes for an array of size n """
 
     def build(self, data, node, l, r):
         if l == r:
@@ -14,6 +18,10 @@ class SegmentTree:
         self.build(data, 2*node+2, mid+1, r)
         self.tree[node] = self._merge(self.tree[2*node+1], self.tree[2*node+2])
 
+
+        """The time complexity for this function is O(1) since its called once
+    per internal node during the call"""
+
     def _merge(self, left, right):
         return (
             min(left[0], right[0]),
@@ -21,6 +29,8 @@ class SegmentTree:
             left[2] + right[2],
             left[3] + right[3]
         )
+
+    """Range query works in O(log n), since at most log(n) segments are merged."""
 
     def query(self, ql, qr, node=0, l=0, r=None):
         if r is None:
@@ -34,9 +44,15 @@ class SegmentTree:
         right = self.query(ql, qr, 2*node+2, mid+1, r)
         return self._merge(left, right)
 
-    def range_min(self, l, r): return self.query(l, r)[0]
-    def range_max(self, l, r): return self.query(l, r)[1]
-    def range_sum(self, l, r): return self.query(l, r)[2]
+    def range_min(self, l, r): 
+        return self.query(l, r)[0]
+    
+    def range_max(self, l, r): 
+        return self.query(l, r)[1]
+    
+    def range_sum(self, l, r): 
+        return self.query(l, r)[2]
+    
     def range_avg(self, l, r):
         q = self.query(l, r)
         return q[2]/q[3] if q[3] else None
