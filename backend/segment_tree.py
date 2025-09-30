@@ -56,3 +56,70 @@ class SegmentTree:
     def range_avg(self, l, r):
         q = self.query(l, r)
         return q[2]/q[3] if q[3] else None
+    
+
+    """This function traverses the tree from the root to the leaf and back,
+      a path of length O(logn), performing constant work at each step."""
+    
+    def update(self, index, value, node=0, l=0, r=None):
+        if r is None:
+            r = self.n - 1
+        
+        self._propagate_lazy(node, l, r) # Push down any pending lazy updates
+        
+        if l == r:
+            self.data[index] = value
+            self.tree[node] = (value, value, value, 1)
+            return
+
+        mid = (l + r) // 2
+        if l <= index <= mid:
+            self.update(index, value, 2*node+1, l, mid)
+        else:
+            self.update(index, value, 2*node+2, mid+1, r)
+        
+        self.tree[node] = self._merge(self.tree[2*node+1], self.tree[2*node+2])
+
+
+        """ O(logn). It uses lazy propagation to update segments within the range, 
+    only visiting a logarithmic number of nodes instead of every node in the range."""
+
+        
+    def range_update(self, ql, qr, value, node=0, l=0, r=None):
+        if r is None:
+            r = self.n - 1
+
+        self._propagate_lazy(node, l, r)
+
+        if l > r or l > qr or r < ql:
+            return
+        
+        if ql <= l and r <= qr:
+            self.tree[node] = (value, value, (r - l + 1) * value, (r - l + 1))
+            if l != r:
+                self.lazy[2 * node + 1] = value
+                self.lazy[2 * node + 2] = value
+            return
+        
+        mid = (l + r) // 2
+        self.range_update(ql, qr, value, 2 * node + 1, l, mid)
+        self.range_update(ql, qr, value, 2 * node + 2, mid + 1, r)
+
+        self.tree[node] = self._merge(self.tree[2 * node + 1], self.tree[2 * node + 2])
+
+
+    """ O(1).This helper function performs a fixed number of operations to push a 
+    pending update down to children nodes, without any recursive calls."""
+
+    def _propagate_lazy(self, node, l, r):
+        if self.lazy[node] != 0:
+            value = self.lazy[node]
+            # Update current node with lazy value
+            self.tree[node] = (value, value, (r-l+1) * value, (r-l+1))
+            
+            # If not a leaf node, push lazy value to children
+            if l != r:
+                self.lazy[2*node+1] = value
+                self.lazy[2*node+2] = value
+            
+            self.lazy[node] = 0 # Reset lazy value for current node

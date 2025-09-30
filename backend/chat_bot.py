@@ -8,7 +8,7 @@ import json
 # Fetch stock data
 
 tickers = ["AAPL", "MSFT", "TSLA"]
-data = yf.download(tickers, start="2025-01-01", end="2025-02-01")["Close"]
+data = yf.download(tickers, start="2025-01-01", end="2025-01-15")["Close"]
 
 trees = {}
 rag_docs = []

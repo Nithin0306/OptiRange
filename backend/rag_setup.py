@@ -10,7 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 load_dotenv()
 
-def setup_rag(rag_docs, index_name="stocks-index-3072", batch_size=50, sleep_time=1.0):
+def setup_rag(rag_docs, index_name="stocks-index-3072", batch_size=50, sleep_time=10.0):
     """
     Setup RAG system with Pinecone and Gemini embeddings.
 
