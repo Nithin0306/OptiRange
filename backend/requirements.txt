@@ -1,0 +1,14 @@
+yfinance
+pandas
+python-dotenv
+pinecone-client
+langchain
+langchain-core
+langchain_google_genai
+langchain-pinecone
+python-dotenv
+
+
+
+Flask
+flask-cors
