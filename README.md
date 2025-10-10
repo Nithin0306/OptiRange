@@ -23,12 +23,16 @@ This project integrates **Data Structures (Segment Tree)** with an **AI-powered 
 
 ## 🗂 Project Structure  
 
-.
-├── backend/        # Python backend (APIs, embeddings, RAG logic, segment tree)
-├── frontend/       # React + Vite frontend (UI layer)
-├── .gitignore      # Git ignore rules
-└── LICENSE         # License information
+## 📂 Project Structure
+```
 
+├── backend/ 
+├── frontend/ # React + Vite app
+├── .gitignore
+├── README.md
+└── LICENSE   
+
+```
 
 ---
 
@@ -54,11 +58,11 @@ pip install -r requirements.txt
 
 # Run backend server
 python app.py
-
+```
 The backend will start running (default: http://127.0.0.1:5000/).
 
 ### 🔹 Frontend Setup (React + Vite)
-
+```bash
 # Navigate to frontend
 cd frontend
 
@@ -67,7 +71,7 @@ npm install
 
 # Start development server
 npm run dev
-
+```
 The frontend will run on http://localhost:5173/ by default.
 
 ---
