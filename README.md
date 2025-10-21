@@ -21,7 +21,49 @@ This project integrates **Data Structures (Segment Tree)** with an **AI-powered 
 
 ---
 
-## 🗂 Project Structure  
+
+## Work Flow
+**Segment Tree + RAG Pipeline Flow**
+```
+User Query
+↓
+Flask API (/chat endpoint)
+↓
+chat_bot.py (Query Handler)
+↓
+RAG Pipeline (rag_setup.py)
+|   ├─ Pinecone Vector DB (document retrieval)
+|   ├─ Google Gemini Embeddings (text → vectors)
+|   └─ Gemini LLM (natural language understanding)
+|                      ↓
+|       Generates JSON Command OR Text Answer
+↓
+Decision Point:
+    ├─ [JSON Command Found] → Segment Tree (segment_tree.py)
+    │                    ↓
+    │            Numerical Result
+    └─ [No Command] → Direct RAG Answer
+                         ↓
+                    Final Answer
+```
+## Description
+---
+
+**Description**
+
+- **User Query**: Natural language input from the frontend UI.
+- **Flask API**: Receives user query and routes to backend query handler.
+- **chat_bot.py**: Handles preprocessing and determines if Segment Tree is needed.
+- **RAG Pipeline**:  
+  - Retrieves relevant documents using Pinecone Vector DB.  
+  - Converts text to embeddings using Google Gemini.  
+  - Uses Gemini LLM for understanding and generating a JSON command or direct text answer.
+- **Decision Point**:  
+  - If a JSON command is generated (e.g., range query for min/max/sum/avg), it is processed by the Segment Tree module for efficient computation.  
+  - If no JSON command is generated, the response is taken directly from the RAG output.
+- **Segment Tree (segment_tree.py)**: Performs efficient numerical operations for the query.
+- **Final Response**: Sent back to frontend for display.
+---
 
 ## 📂 Project Structure
 ```
